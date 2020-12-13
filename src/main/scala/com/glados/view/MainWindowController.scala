@@ -8,7 +8,7 @@ import com.glados.RPSClient
 import com.glados.RPSClient.getClass
 import com.glados.User
 import com.glados.Client
-import com.glados.Client.loader
+import com.glados.Client.stage
 import javafx.fxml
 
 import scalafx.collections.ObservableBuffer
@@ -28,6 +28,9 @@ private val txtMessage: TextField, private val join: Button) {
     }
 
     def displayStatus(text: String): Unit = {
+        // called when the user receives the Joined message from the server
+
+        // updates status to the passed text ("Connected")
         lblStatus.text = text
         
         // makes the name TextField uneditable but remain clearly visible
@@ -48,6 +51,9 @@ private val txtMessage: TextField, private val join: Button) {
 
     def rejectAlert(): Unit = {
         new Alert(AlertType.Information) {
+            // initOwner keeps the pop-up window over the client window 
+            // and preserves graphics (icon)
+            initOwner(stage)
             title = "User: " + txtName.getText()
             headerText = "Rejected!"
             contentText = "The user you have selected is currently in-game or has rejected your challenge."
@@ -59,6 +65,7 @@ private val txtMessage: TextField, private val join: Button) {
 
         // Create and show confirmation alert
         val alert = new Alert(AlertType.Confirmation) {
+            initOwner(stage)
             title = "User: " + txtName.getText()
             headerText = "You have received a challenge from User."
             contentText = "Do you wish to accept this challenge?"
@@ -84,6 +91,7 @@ private val txtMessage: TextField, private val join: Button) {
         val ButtonTypeScissors = new ButtonType("Scissors")
 
         val alert = new Alert(AlertType.Confirmation) {
+            initOwner(stage)
             title = "User: " + txtName.getText()
             headerText = "You have accepted the challenge."
             contentText = "Choose your option: "
@@ -119,6 +127,7 @@ private val txtMessage: TextField, private val join: Button) {
         val ButtonTypeScissors = new ButtonType("Scissors")
 
         val alert = new Alert(AlertType.Confirmation) {
+            initOwner(stage)
             title = "User: " + txtName.getText()
             headerText = "Your opponent has chosen."
             contentText = "Choose your option: "
@@ -183,6 +192,7 @@ private val txtMessage: TextField, private val join: Button) {
 
     def displayResult(selfChoice: String, opponentChoice: String, gameResult: String): Unit ={
         new Alert(AlertType.Information) {
+            initOwner(stage)
             title = "User: " + txtName.getText()
             headerText = s"You chose ${selfChoice.toUpperCase} while your opponent chose ${opponentChoice.toUpperCase}."
             contentText = s"You ${gameResult.toUpperCase}!"
