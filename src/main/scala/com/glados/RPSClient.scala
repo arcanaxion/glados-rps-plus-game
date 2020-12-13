@@ -26,24 +26,22 @@ object RPSClient {
     //internal protocol
     case object start extends Command
     case class StartJoin(name: String) extends Command
-    final case class SendChallenge(target: ActorRef[RPSClient.Command]) extends Command
-    final case class SendReject(target: ActorRef[RPSClient.Command]) extends Command
-    final case class SendChoice(target: ActorRef[RPSClient.Command], choice: String) extends Command
-    final case class SendResult(target: ActorRef[RPSClient.Command], selfChoice: String, opponentChoice: String, gameResult: String) extends Command
-
-    // protocol
     final case object FindTheServer extends Command
     private case class ListingResponse(listing: Receptionist.Listing) extends Command
     private final case class MemberChange(event: MemberEvent) extends Command
     private final case class ReachabilityChange(reachabilityEvent: ReachabilityEvent) extends Command
-
-    // protocol
     final case class MemberList(list: Iterable[User]) extends Command
     final case class Joined(list: Iterable[User]) extends Command
+
+    // RPS protocol
     final case class Challenge(from: ActorRef[RPSClient.Command]) extends Command
     final case class Reject() extends Command
     final case class Choice(choice: String) extends Command
     final case class Result(selfChoice: String, opponentChoice: String, gameResult: String) extends Command
+    final case class SendChallenge(target: ActorRef[RPSClient.Command]) extends Command
+    final case class SendReject(target: ActorRef[RPSClient.Command]) extends Command
+    final case class SendChoice(target: ActorRef[RPSClient.Command], choice: String) extends Command
+    final case class SendResult(target: ActorRef[RPSClient.Command], selfChoice: String, opponentChoice: String, gameResult: String) extends Command
 
     val members = new ObservableHashSet[User]()
 
@@ -140,6 +138,9 @@ object RPSClient {
                 members.clear()
                 members ++= list
                 Behaviors.same
+            
+            case _=>
+                    Behaviors.unhandled
         }
     }.receiveSignal {
         case (context, PostStop) =>
