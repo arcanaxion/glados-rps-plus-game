@@ -77,7 +77,14 @@ object RPSClient {
                 } else {
                     // show user the alert to accept or reject challenge
                     Platform.runLater {
-                        Client.control.challengeAlert()
+                        var opponentName = ""
+                        try {
+                            opponentName = members.toList.filter(_.ref==from)(0).name
+                        } catch {
+                            case e: Exception => opponentName = "unknown"
+                        }
+                        
+                        Client.control.challengeAlert(opponentName)
                     }
 
                     // challenge decision will change to "yes" or "no" after user select

@@ -54,20 +54,20 @@ private val txtMessage: TextField, private val join: Button) {
             // initOwner keeps the pop-up window over the client window 
             // and preserves graphics (icon)
             initOwner(stage)
-            title = "User: " + txtName.getText()
+            title = "Username: " + txtName.getText()
             headerText = "Rejected!"
             contentText = "The user you have selected is currently in-game or has rejected your challenge."
         }.showAndWait()
         RPSClient.challengeStatus = "None"
     }
 
-    def challengeAlert(){
+    def challengeAlert(opponentName: String){
 
         // Create and show confirmation alert
         val alert = new Alert(AlertType.Confirmation) {
             initOwner(stage)
-            title = "User: " + txtName.getText()
-            headerText = "You have received a challenge from User."
+            title = "Username: " + txtName.getText()
+            headerText = s"You have received a challenge from ${opponentName.toUpperCase}."
             contentText = "Do you wish to accept this challenge?"
         }
 
@@ -92,7 +92,7 @@ private val txtMessage: TextField, private val join: Button) {
 
         val alert = new Alert(AlertType.Confirmation) {
             initOwner(stage)
-            title = "User: " + txtName.getText()
+            title = "Username: " + txtName.getText()
             headerText = "You have accepted the challenge."
             contentText = "Choose your option: "
             buttonTypes = Seq(ButtonTypeRock, ButtonTypePaper, ButtonTypeScissors, ButtonType.Cancel)
@@ -128,7 +128,7 @@ private val txtMessage: TextField, private val join: Button) {
 
         val alert = new Alert(AlertType.Confirmation) {
             initOwner(stage)
-            title = "User: " + txtName.getText()
+            title = "Username: " + txtName.getText()
             headerText = "Your opponent has chosen."
             contentText = "Choose your option: "
             buttonTypes = Seq(ButtonTypeRock, ButtonTypePaper, ButtonTypeScissors, ButtonType.Cancel)
@@ -193,7 +193,7 @@ private val txtMessage: TextField, private val join: Button) {
     def displayResult(selfChoice: String, opponentChoice: String, gameResult: String): Unit ={
         new Alert(AlertType.Information) {
             initOwner(stage)
-            title = "User: " + txtName.getText()
+            title = "Username: " + txtName.getText()
             headerText = s"You chose ${selfChoice.toUpperCase} while your opponent chose ${opponentChoice.toUpperCase}."
             contentText = s"You ${gameResult.toUpperCase}!"
         }.showAndWait()
