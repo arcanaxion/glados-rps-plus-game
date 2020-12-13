@@ -15,23 +15,23 @@ import com.glados.protocol.JsonSerializable
 import scalafx.collections.ObservableHashSet
 
 
-object ChatServer {
+object RPSServer {
     sealed trait Command extends JsonSerializable
 
     // chat protocol 
-    case class JoinChat(name: String, from: ActorRef[ChatClient.Command]) extends Command
-    case class Leave(name: String, from: ActorRef[ChatClient.Command]) extends Command
+    case class JoinChat(name: String, from: ActorRef[RPSClient.Command]) extends Command
+    case class Leave(name: String, from: ActorRef[RPSClient.Command]) extends Command
 
-    val ServerKey: ServiceKey[ChatServer.Command] = ServiceKey("ChatServer")
+    val ServerKey: ServiceKey[RPSServer.Command] = ServiceKey("RPSServer")
     val members = new ObservableHashSet[User]()
 
     members.onChange{(ns, _) =>
         for(member <- ns){
-            member.ref ! ChatClient.MemberList(members.toList)
+            member.ref ! RPSClient.MemberList(members.toList)
         }
     }
 
-    def apply(): Behavior[ChatServer.Command] = Behaviors.setup { context =>
+    def apply(): Behavior[RPSServer.Command] = Behaviors.setup { context =>
 
         context.system.receptionist ! Receptionist.Register(ServerKey, context.self)
         
@@ -41,7 +41,7 @@ object ChatServer {
             message match {
                 case JoinChat(name, from) =>
                     members += User(name, from)
-                    from ! ChatClient.Joined(members.toList)
+                    from ! RPSClient.Joined(members.toList)
                     Behaviors.same
                 case Leave(name, from) => 
                     members -= User(name, from)
@@ -60,6 +60,6 @@ object Server extends App {
     AkkaManagement(mainSystem).start()
     //val serviceDiscovery = Discovery(mainSystem).discovery
     ClusterBootstrap(mainSystem).start() 
-    //val greeterMain: ActorSystem[ChatServer.Command] = ActorSystem(ChatServer(), "HelloSystem")
-    mainSystem.spawn(ChatServer(), "ChatServer")
+    //val greeterMain: ActorSystem[RPSServer.Command] = ActorSystem(RPSServer(), "HelloSystem")
+    mainSystem.spawn(RPSServer(), "RPSServer")
 }

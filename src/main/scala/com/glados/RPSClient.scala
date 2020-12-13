@@ -17,7 +17,7 @@ import akka.cluster.ClusterEvent.UnreachableMember
 import akka.cluster.ClusterEvent.MemberEvent
 import akka.actor.Address
 
-object ChatClient {
+object RPSClient {
 
     sealed trait Command extends JsonSerializable
     var challengeStatus = new String("None")  // Status on whether user is being challenged
@@ -26,10 +26,10 @@ object ChatClient {
     //internal protocol
     case object start extends Command
     case class StartJoin(name: String) extends Command
-    final case class SendChallenge(target: ActorRef[ChatClient.Command]) extends Command
-    final case class SendReject(target: ActorRef[ChatClient.Command]) extends Command
-    final case class SendChoice(target: ActorRef[ChatClient.Command], choice: String) extends Command
-    final case class SendResult(target: ActorRef[ChatClient.Command], selfChoice: String, opponentChoice: String, gameResult: String) extends Command
+    final case class SendChallenge(target: ActorRef[RPSClient.Command]) extends Command
+    final case class SendReject(target: ActorRef[RPSClient.Command]) extends Command
+    final case class SendChoice(target: ActorRef[RPSClient.Command], choice: String) extends Command
+    final case class SendResult(target: ActorRef[RPSClient.Command], selfChoice: String, opponentChoice: String, gameResult: String) extends Command
 
     // protocol
     final case object FindTheServer extends Command
@@ -40,7 +40,7 @@ object ChatClient {
     // protocol
     final case class MemberList(list: Iterable[User]) extends Command
     final case class Joined(list: Iterable[User]) extends Command
-    final case class Challenge(from: ActorRef[ChatClient.Command]) extends Command
+    final case class Challenge(from: ActorRef[RPSClient.Command]) extends Command
     final case class Reject() extends Command
     final case class Choice(choice: String) extends Command
     final case class Result(selfChoice: String, opponentChoice: String, gameResult: String) extends Command
@@ -61,11 +61,11 @@ object ChatClient {
         }  
     }
 
-    var defaultBehavior: Option[Behavior[ChatClient.Command]] = None
-    var remoteOpt: Option[ActorRef[ChatServer.Command]] = None 
+    var defaultBehavior: Option[Behavior[RPSClient.Command]] = None
+    var remoteOpt: Option[ActorRef[RPSServer.Command]] = None 
     var nameOpt: Option[String] = None
 
-    def messageStarted(): Behavior[ChatClient.Command] = Behaviors.receive[ChatClient.Command] { (context, message) => 
+    def messageStarted(): Behavior[RPSClient.Command] = Behaviors.receive[RPSClient.Command] { (context, message) => 
         message match {
             case SendChallenge(target) =>
                 challengeStatus = "yes"
@@ -144,15 +144,15 @@ object ChatClient {
     }.receiveSignal {
         case (context, PostStop) =>
             for (name <- nameOpt; remote <- remoteOpt) {
-                remote ! ChatServer.Leave(name, context.self)
+                remote ! RPSServer.Leave(name, context.self)
             }
             defaultBehavior.getOrElse(Behaviors.same)
     }
 
-    def apply(): Behavior[ChatClient.Command] =
+    def apply(): Behavior[RPSClient.Command] =
         Behaviors.setup { context =>
         // (1) a ServiceKey is a unique identifier for this actor
-        // var remoteOpt:Option[ActorRef[ChatServer.Command]] = None 
+        // var remoteOpt:Option[ActorRef[RPSServer.Command]] = None 
 
         Upnp.bindPort(context)
           
@@ -161,24 +161,24 @@ object ChatClient {
 
         // (2) create an ActorRef that can be thought of as a Receptionist
         // Listing “adapter.” this will be used in the next line of code.
-        // the ChatClient.ListingResponse(listing) part of the code tells the
+        // the RPSClient.ListingResponse(listing) part of the code tells the
         // Receptionist how to get back in touch with us after we contact
         // it in Step 4 below.
         // also, this line of code is long, so i wrapped it onto two lines
         val listingAdapter: ActorRef[Receptionist.Listing] =
             context.messageAdapter { listing =>
                 println(s"listingAdapter:listing: ${listing.toString}")
-                ChatClient.ListingResponse(listing)
+                RPSClient.ListingResponse(listing)
             }
 
         //(3) send a message to the Receptionist saying that we want
         // to subscribe to events related to ServerHello.ServerKey, which
-        // represents the ChatClient actor.
-        context.system.receptionist ! Receptionist.Subscribe(ChatServer.ServerKey, listingAdapter)
-        //context.actorOf(RemoteRouterConfig(RoundRobinPool(5), addresses).props(Props[ChatClient.TestActorClassic]()), "testA")
+        // represents the RPSClient actor.
+        context.system.receptionist ! Receptionist.Subscribe(RPSServer.ServerKey, listingAdapter)
+        //context.actorOf(RemoteRouterConfig(RoundRobinPool(5), addresses).props(Props[RPSClient.TestActorClassic]()), "testA")
         defaultBehavior = Some(Behaviors.receiveMessage { message =>
             message match {
-                case ChatClient.start =>
+                case RPSClient.start =>
                     context.self ! FindTheServer 
                     Behaviors.same
 
@@ -188,7 +188,7 @@ object ChatClient {
                 case FindTheServer =>
                     println(s"Clinet Hello: got a FindTheServer message")
                     context.system.receptionist !
-                        Receptionist.Find(ChatServer.ServerKey, listingAdapter)
+                        Receptionist.Find(RPSServer.ServerKey, listingAdapter)
                     Behaviors.same
 
                 // (5) after Step 4, the Receptionist sends us this
@@ -198,8 +198,8 @@ object ChatClient {
                 // this example i know that there will be at most one
                 // ServerHello actor, but in other cases there may be more
                 // than one actor in this set.
-                case ListingResponse(ChatServer.ServerKey.Listing(listings)) =>
-                    val xs: Set[ActorRef[ChatServer.Command]] = listings
+                case ListingResponse(RPSServer.ServerKey.Listing(listings)) =>
+                    val xs: Set[ActorRef[RPSServer.Command]] = listings
                     for (x <- xs) {
                         remoteOpt = Some(x)
                     }
@@ -207,10 +207,10 @@ object ChatClient {
 
                 case StartJoin(name) =>
                     nameOpt = Option(name)
-                    remoteOpt.map ( _ ! ChatServer.JoinChat(name, context.self))
+                    remoteOpt.map ( _ ! RPSServer.JoinChat(name, context.self))
                     Behaviors.same
 
-                case ChatClient.Joined(x) =>
+                case RPSClient.Joined(x) =>
                     Platform.runLater {
                         Client.control.displayStatus("joined")
                     }

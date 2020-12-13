@@ -23,11 +23,11 @@ object Client extends JFXApp {
     val greeterMain: ActorSystem[Nothing] = mainSystem.toTyped
 
     val cluster = Cluster(greeterMain)
-    //val greeterMain: ActorSystem[ChatClient.Command] = ActorSystem(ChatClient(), "HelloSystem")
+    //val greeterMain: ActorSystem[RPSClient.Command] = ActorSystem(RPSClient(), "HelloSystem")
 
     val discovery: ServiceDiscovery = Discovery(mainSystem).discovery
 
-    val userRef = mainSystem.spawn(ChatClient(), "ChatClient")
+    val userRef = mainSystem.spawn(RPSClient(), "RPSClient")
 
     def joinPublicSeedNode(): Unit = {
         val lookup: Future[Resolved] =
@@ -49,13 +49,13 @@ object Client extends JFXApp {
 
     joinLocalSeedNode()
 
-    userRef ! ChatClient.start
+    userRef ! RPSClient.start
 
     val loader = new FXMLLoader(null, NoDependencyResolver)
     loader.load(getClass.getResourceAsStream("view/MainWindow.fxml"))
     val border: scalafx.scene.layout.BorderPane = loader.getRoot[javafx.scene.layout.BorderPane]()
     val control = loader.getController[com.glados.view.MainWindowController#Controller]()
-    control.chatClientRef = Option(userRef)
+    control.RPSClientRef = Option(userRef)
     stage = new PrimaryStage() {
         scene = new Scene(){
             title = "GLaDOS Rock-Paper-Scissors"

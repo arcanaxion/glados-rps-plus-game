@@ -4,8 +4,8 @@ import scalafxml.core.macros.sfxml
 import scalafx.event.ActionEvent
 import scalafx.scene.control.{Alert, ButtonType, DialogPane, Label, ListView, TextField}
 import scalafx.scene.control.Alert.AlertType
-import com.glados.ChatClient
-import com.glados.ChatClient.getClass
+import com.glados.RPSClient
+import com.glados.RPSClient.getClass
 import com.glados.User
 import com.glados.Client
 import com.glados.Client.loader
@@ -19,11 +19,11 @@ class MainWindowController(private val txtName: TextField,
 private val lblStatus: Label, private val choiceDisplay: Label, private val listUser: ListView[User],
 
 private val txtMessage: TextField) {
-    var chatClientRef: Option[ActorRef[ChatClient.Command]] = None
+    var RPSClientRef: Option[ActorRef[RPSClient.Command]] = None
 
     def handleJoin(action: ActionEvent): Unit = {
         if(txtName != null)
-          chatClientRef map (_ ! ChatClient.StartJoin(txtName.text()))
+          RPSClientRef map (_ ! RPSClient.StartJoin(txtName.text()))
     }
 
     def displayStatus(text: String): Unit = {
@@ -44,7 +44,7 @@ private val txtMessage: TextField) {
       headerText = "Rejected!"
       contentText = "The user you have selected is currently ingame or has rejected your challenge"
     }.showAndWait()
-    ChatClient.challengeStatus = "None"
+    RPSClient.challengeStatus = "None"
   }
 
   def challengeAlert(){
@@ -59,14 +59,14 @@ private val txtMessage: TextField) {
 
     // React to user's selectioon
     result match {
-      case Some(ButtonType.OK) => ChatClient.challengeDecision = "yes"
-      case _                    => ChatClient.challengeDecision = "no"
+      case Some(ButtonType.OK) => RPSClient.challengeDecision = "yes"
+      case _                    => RPSClient.challengeDecision = "no"
     }
   }
 
   def handleChallenge(action: ActionEvent): Unit = {
     if (listUser.selectionModel().selectedIndex.value >= 0) {
-      Client.userRef ! ChatClient.SendChallenge(listUser.selectionModel().selectedItem.value.ref)
+      Client.userRef ! RPSClient.SendChallenge(listUser.selectionModel().selectedItem.value.ref)
     }
   }
 
@@ -121,7 +121,7 @@ private val txtMessage: TextField) {
                                     displayChoice("paper")
       case Some(ButtonTypeScissors) => selfChoice = "scissors"
                                        displayChoice("scissors")
-      case _ => Client.userRef ! ChatClient.SendReject(listUser.selectionModel().selectedItem.value.ref)
+      case _ => Client.userRef ! RPSClient.SendReject(listUser.selectionModel().selectedItem.value.ref)
     }
 
     if (selfChoice == "rock") {
@@ -152,7 +152,7 @@ private val txtMessage: TextField) {
       case "draw" => opponentResult = "draw"
     }
 
-    Client.userRef ! ChatClient.SendResult(listUser.selectionModel().selectedItem.value.ref, opponentChoice, selfChoice, opponentResult)
+    Client.userRef ! RPSClient.SendResult(listUser.selectionModel().selectedItem.value.ref, opponentChoice, selfChoice, opponentResult)
     displayResult(selfChoice, opponentChoice, gameResult)
 
   }
@@ -163,7 +163,7 @@ private val txtMessage: TextField) {
       headerText = "You chose " + selfChoice + " while your opponent chose " + opponentChoice
       contentText = "You " + gameResult
     }.showAndWait()
-    ChatClient.challengeStatus = "None"
+    RPSClient.challengeStatus = "None"
     displayChoice("None")
   }
 
