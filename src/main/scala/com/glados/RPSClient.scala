@@ -28,7 +28,6 @@ object RPSClient {
     case class StartJoin(name: String) extends Command
     final case object FindTheServer extends Command
     private case class ListingResponse(listing: Receptionist.Listing) extends Command
-    private final case class MemberChange(event: MemberEvent) extends Command
     private final case class ReachabilityChange(reachabilityEvent: ReachabilityEvent) extends Command
     final case class MemberList(list: Iterable[User]) extends Command
     final case class Joined(list: Iterable[User]) extends Command
@@ -40,7 +39,6 @@ object RPSClient {
     final case class Result(selfChoice: String, opponentChoice: String, gameResult: String) extends Command
     final case class SendChallenge(target: ActorRef[RPSClient.Command]) extends Command
     final case class SendReject(target: ActorRef[RPSClient.Command]) extends Command
-    final case class SendChoice(target: ActorRef[RPSClient.Command], choice: String) extends Command
     final case class SendResult(target: ActorRef[RPSClient.Command], selfChoice: String, opponentChoice: String, gameResult: String) extends Command
 
     val members = new ObservableHashSet[User]()
@@ -123,10 +121,6 @@ object RPSClient {
                     Client.control.rejectAlert()
                     challengeStatus = "None"
                 }
-                Behaviors.same
-
-            case SendChoice(target, choice) =>
-                target ! Choice(choice)
                 Behaviors.same
 
             case Choice(choice) =>
