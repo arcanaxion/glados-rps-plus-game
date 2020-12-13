@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="365.0" prefWidth="461.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.glados.view.MainWindowController">
+   <top>
+      <AnchorPane prefHeight="380.0" prefWidth="485.0" BorderPane.alignment="CENTER">
+         <children>
+            <ListView fx:id="listUser" layoutX="131.0" layoutY="158.0" prefHeight="141.0" prefWidth="200.0" />
+            <Button layoutX="188.0" layoutY="308.0" mnemonicParsing="false" onAction="#handleChallenge" text="Challenge" />
+            <Label layoutX="91.0" layoutY="32.0" text="Name" />
+            <TextField fx:id="txtName" layoutX="138.0" layoutY="27.0" />
+            <Button layoutX="325.0" layoutY="27.0" mnemonicParsing="false" onAction="#handleJoin" text="Join" />
+            <Label fx:id="lblStatus" layoutX="239.0" layoutY="73.0" text="Label" />
+            <Label layoutX="168.0" layoutY="73.0" text="Status" />
+            <Label layoutX="171.0" layoutY="119.0" text="Choice" />
+            <Label fx:id="choiceDisplay" layoutX="239.0" layoutY="119.0" text="None" />
+         </children>
+      </AnchorPane>
+   </top>
+</BorderPane>
