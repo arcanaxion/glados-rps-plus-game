@@ -25,7 +25,7 @@ object MyConfiguration {
         for((i, add) <- addresses){
             println(s"$i = $add")
         }
-        println("please select which interface to bind")
+        println("Please select which interface to bind: ")
         var selection: Int = 0
         do {
             selection = scala.io.StdIn.readInt()
@@ -33,16 +33,16 @@ object MyConfiguration {
 
         localAddress = Option(addresses(selection))
 
-        println("please enter port to bind")
+        println("Please enter port to bind: ")
 
         val port = scala.io.StdIn.readLine.toInt
 
-        if (scala.io.StdIn.readLine("Is running locally?y/n").toUpperCase == "Y") {
+        if (scala.io.StdIn.readLine("Is running locally? y/n: ").toUpperCase != "N") {
             runLocalOnly = Some(true)
             MyConfiguration(localAddress.get.getHostAddress(), "", port.toString)
         } else {
             runLocalOnly = Some(false)
-            MyConfiguration(scala.io.StdIn.readLine("Enter public address/domain name"),  localAddress.get.getHostAddress(), port.toString)
+            MyConfiguration(scala.io.StdIn.readLine("Enter public address/domain name: "),  localAddress.get.getHostAddress(), port.toString)
         }
     }
     
