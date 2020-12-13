@@ -22,8 +22,10 @@ private val txtMessage: TextField) {
     var RPSClientRef: Option[ActorRef[RPSClient.Command]] = None
 
     def handleJoin(action: ActionEvent): Unit = {
-        if(txtName != null)
-          RPSClientRef map (_ ! RPSClient.StartJoin(txtName.text()))
+        if(txtName != null) {
+            RPSClientRef map (_ ! RPSClient.StartJoin(txtName.text()))
+        }
+          
     }
 
     def displayStatus(text: String): Unit = {
@@ -34,137 +36,152 @@ private val txtMessage: TextField) {
         choiceDisplay.text = text
     }
 
-  def updateList(x: Iterable[User]): Unit ={
-    listUser.items = new ObservableBuffer[User]() ++= x
-  }
-
-  def rejectAlert(): Unit = {
-    new Alert(AlertType.Information) {
-      title = "User: " + txtName.getText()
-      headerText = "Rejected!"
-      contentText = "The user you have selected is currently ingame or has rejected your challenge"
-    }.showAndWait()
-    RPSClient.challengeStatus = "None"
-  }
-
-  def challengeAlert(){
-  //   Create and show confirmation alert
-    val alert = new Alert(AlertType.Confirmation) {
-      title = "User: " + txtName.getText()
-      headerText = "You have received a challenge from User."
-      contentText = "Do you wish to accept this challange?"
+    def updateList(x: Iterable[User]): Unit ={
+        listUser.items = new ObservableBuffer[User]() ++= x
     }
 
-    val result = alert.showAndWait()
-
-    // React to user's selectioon
-    result match {
-      case Some(ButtonType.OK) => RPSClient.challengeDecision = "yes"
-      case _                    => RPSClient.challengeDecision = "no"
-    }
-  }
-
-  def handleChallenge(action: ActionEvent): Unit = {
-    if (listUser.selectionModel().selectedIndex.value >= 0) {
-      Client.userRef ! RPSClient.SendChallenge(listUser.selectionModel().selectedItem.value.ref)
-    }
-  }
-
-  def startGameAlert(): String ={
-    val ButtonTypeRock = new ButtonType("Rock")
-    val ButtonTypePaper = new ButtonType("Paper")
-    val ButtonTypeScissors = new ButtonType("Scissors")
-
-    val alert = new Alert(AlertType.Confirmation) {
-      title = "User: " + txtName.getText()
-      headerText = "You have accepted the challenge."
-      contentText = "Choose your option."
-      buttonTypes = Seq(        ButtonTypeRock, ButtonTypePaper, ButtonTypeScissors, ButtonType.Cancel)
+    def rejectAlert(): Unit = {
+        new Alert(AlertType.Information) {
+        title = "User: " + txtName.getText()
+        headerText = "Rejected!"
+        contentText = "The user you have selected is currently ingame or has rejected your challenge"
+        }.showAndWait()
+        RPSClient.challengeStatus = "None"
     }
 
-    val result = alert.showAndWait()
+    def challengeAlert(){
 
-    result match {
-      case Some(ButtonTypeRock)   => displayChoice("rock")
-                                     return "rock"
+        // Create and show confirmation alert
+        val alert = new Alert(AlertType.Confirmation) {
+            title = "User: " + txtName.getText()
+            headerText = "You have received a challenge from User."
+            contentText = "Do you wish to accept this challange?"
+        }
 
-      case Some(ButtonTypePaper)   => displayChoice("paper")
-                                      return "paper"
-
-      case Some(ButtonTypeScissors) => displayChoice("scissors")
-                                       return "scissors"
-      case _ => return "reject"
-    }
-  }
-
-  def endGameAlert(opponentChoice: String): Unit = {
-    var selfChoice = new String
-    var gameResult = new String
-    var opponentResult = new String
-    val ButtonTypeRock = new ButtonType("Rock")
-    val ButtonTypePaper = new ButtonType("Paper")
-    val ButtonTypeScissors = new ButtonType("Scissors")
-
-    val alert = new Alert(AlertType.Confirmation) {
-      title = "User: " + txtName.getText()
-      headerText = "Your opponent has chosen."
-      contentText = "Choose your option."
-      buttonTypes = Seq(ButtonTypeRock, ButtonTypePaper, ButtonTypeScissors, ButtonType.Cancel)
+        val result = alert.showAndWait()
+        // React to user's selectioon
+        result match {
+            case Some(ButtonType.OK) => RPSClient.challengeDecision = "yes"
+            case _                    => RPSClient.challengeDecision = "no"
+        }
     }
 
-    val result = alert.showAndWait()
-
-    result match {
-      case Some(ButtonTypeRock) => selfChoice = "rock"
-                                   displayChoice("rock")
-      case Some(ButtonTypePaper) => selfChoice = "paper"
-                                    displayChoice("paper")
-      case Some(ButtonTypeScissors) => selfChoice = "scissors"
-                                       displayChoice("scissors")
-      case _ => Client.userRef ! RPSClient.SendReject(listUser.selectionModel().selectedItem.value.ref)
+    def handleChallenge(action: ActionEvent): Unit = {
+        if (listUser.selectionModel().selectedIndex.value >= 0) {
+            Client.userRef ! RPSClient.SendChallenge(listUser.selectionModel().selectedItem.value.ref)
+        }
     }
 
-    if (selfChoice == "rock") {
-      opponentChoice match {
-        case "rock" => gameResult = "draw"
-        case "paper" => gameResult = "lose"
-        case "scissors" => gameResult = "win"
-      }
-    }
-    if (selfChoice == "paper") {
-      opponentChoice match {
-        case "rock" => gameResult = "win"
-        case "paper" => gameResult = "draw"
-        case "scissors" => gameResult = "lose"
-      }
-    }
-    if (selfChoice == "scissors") {
-      opponentChoice match {
-        case "rock" => gameResult = "lose"
-        case "paper" => gameResult = "win"
-        case "scissors" => gameResult = "draw"
-      }
+    def startGameAlert(): String ={
+        val ButtonTypeRock = new ButtonType("Rock")
+        val ButtonTypePaper = new ButtonType("Paper")
+        val ButtonTypeScissors = new ButtonType("Scissors")
+
+        val alert = new Alert(AlertType.Confirmation) {
+            title = "User: " + txtName.getText()
+            headerText = "You have accepted the challenge."
+            contentText = "Choose your option."
+            buttonTypes = Seq(ButtonTypeRock, ButtonTypePaper, ButtonTypeScissors, ButtonType.Cancel)
+        }
+
+        val result = alert.showAndWait()
+
+        result match {
+            case Some(ButtonTypeRock) => 
+                displayChoice("rock")
+                return "rock"
+
+            case Some(ButtonTypePaper) => 
+                displayChoice("paper")
+                return "paper"
+
+            case Some(ButtonTypeScissors) => 
+                displayChoice("scissors")
+                return "scissors"
+
+            case _ => 
+                return "reject"
+        }
     }
 
-    gameResult match {
-      case "win" => opponentResult = "lose"
-      case "lose" => opponentResult = "win"
-      case "draw" => opponentResult = "draw"
+    def endGameAlert(opponentChoice: String): Unit = {
+        var selfChoice = new String
+        var gameResult = new String
+        var opponentResult = new String
+        val ButtonTypeRock = new ButtonType("Rock")
+        val ButtonTypePaper = new ButtonType("Paper")
+        val ButtonTypeScissors = new ButtonType("Scissors")
+
+        val alert = new Alert(AlertType.Confirmation) {
+            title = "User: " + txtName.getText()
+            headerText = "Your opponent has chosen."
+            contentText = "Choose your option."
+            buttonTypes = Seq(ButtonTypeRock, ButtonTypePaper, ButtonTypeScissors, ButtonType.Cancel)
+        }
+
+        val result = alert.showAndWait()
+
+        result match {
+            case Some(ButtonTypeRock) => 
+                selfChoice = "rock"
+                displayChoice("rock")
+
+            case Some(ButtonTypePaper) => 
+                selfChoice = "paper"
+                displayChoice("paper")
+
+            case Some(ButtonTypeScissors) => 
+                selfChoice = "scissors"
+                displayChoice("scissors")
+
+            case _ => 
+                Client.userRef ! RPSClient.SendReject(listUser.selectionModel().selectedItem.value.ref)
+        }
+
+        if (selfChoice == "rock") {
+            opponentChoice match {
+                case "rock" => gameResult = "draw"
+                case "paper" => gameResult = "lose"
+                case "scissors" => gameResult = "win"
+            }
+        }
+
+        if (selfChoice == "paper") {
+            opponentChoice match {
+                case "rock" => gameResult = "win"
+                case "paper" => gameResult = "draw"
+                case "scissors" => gameResult = "lose"
+            }
+        }
+
+        if (selfChoice == "scissors") {
+            opponentChoice match {
+                case "rock" => gameResult = "lose"
+                case "paper" => gameResult = "win"
+                case "scissors" => gameResult = "draw"
+            }
+        }
+
+        gameResult match {
+            case "win" => opponentResult = "lose"
+            case "lose" => opponentResult = "win"
+            case "draw" => opponentResult = "draw"
+        }
+
+        Client.userRef ! RPSClient.SendResult(listUser.selectionModel().selectedItem.value.ref, opponentChoice, selfChoice, opponentResult)
+        displayResult(selfChoice, opponentChoice, gameResult)
+
     }
 
-    Client.userRef ! RPSClient.SendResult(listUser.selectionModel().selectedItem.value.ref, opponentChoice, selfChoice, opponentResult)
-    displayResult(selfChoice, opponentChoice, gameResult)
-
-  }
-
-  def displayResult(selfChoice: String, opponentChoice: String, gameResult: String): Unit ={
-    new Alert(AlertType.Information) {
-      title = "User: " + txtName.getText()
-      headerText = "You chose " + selfChoice + " while your opponent chose " + opponentChoice
-      contentText = "You " + gameResult
-    }.showAndWait()
-    RPSClient.challengeStatus = "None"
-    displayChoice("None")
-  }
+    def displayResult(selfChoice: String, opponentChoice: String, gameResult: String): Unit ={
+        new Alert(AlertType.Information) {
+            title = "User: " + txtName.getText()
+            headerText = "You chose " + selfChoice + " while your opponent chose " + opponentChoice
+            contentText = "You " + gameResult
+        }.showAndWait()
+        
+        RPSClient.challengeStatus = "None"
+        displayChoice("None")
+    }
 
 }
