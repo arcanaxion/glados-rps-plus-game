@@ -71,42 +71,53 @@ object RPSClient {
                 Behaviors.same
 
             case Challenge(from) =>
+                // if challenged user already has a challenge, reject the incoming one
                 if (challengeStatus != "None") {
                     from ! Reject()    
                 } else {
+                    // show user the alert to accept or reject challenge
                     Platform.runLater {
                         Client.control.challengeAlert()
                     }
 
+                    // challenge decision will change to "yes" or "no" after user select
                     while (challengeDecision == "None") { Thread.sleep(1000) }
 
-                    if (challengeDecision == "yes") {
-                        challengeDecision = "None"
+                    // handle challenge decision
+                    if (challengeDecision == "yes") { // user accepts challenge
                         var selection = new String("None")
                         Platform.runLater {
                             selection = Client.control.startGameAlert()
                         }
+
+                        // selection will change to "rock", "paper", "scissors" or "reject"
+                        // after interaction with alert window
                         while (selection == "None") { Thread.sleep(1000) }
 
-                        if (selection == "reject") {
+                        if (selection == "reject") { // user decided to reject
                             from ! Reject()
                             challengeStatus = "None"
-                        } else {
+                        } else { // user selected "rock", "paper" or "scissors"
                             from ! Choice(selection)
                         }
-                    } else {
+                    } else { // user decided to reject
                         from ! Reject()
-                        challengeDecision = "None"
                         challengeStatus = "None"
                     }
+                    // reset challenge decision
+                    challengeDecision = "None"
                 }
                 Behaviors.same
 
+            // controller sends this message which tells the user to send 
+            // Reject message to the opponent
             case SendReject(target) =>
                 target ! Reject()
                 challengeStatus = "None"
                 Behaviors.same
 
+            // Reject message means the opponent has rejected the challenge
+            // or abandoned partway through
             case Reject() =>
                 Platform.runLater {
                     Client.control.rejectAlert()
@@ -187,7 +198,7 @@ object RPSClient {
                 // that we want to find any/all listings related to
                 // Mouth.MouthKey, i.e., the Mouth actor.
                 case FindTheServer =>
-                    println(s"Clinet Hello: got a FindTheServer message")
+                    println(s"Client Hello: got a FindTheServer message")
                     context.system.receptionist !
                         Receptionist.Find(RPSServer.ServerKey, listingAdapter)
                     Behaviors.same
@@ -213,7 +224,7 @@ object RPSClient {
 
                 case RPSClient.Joined(x) =>
                     Platform.runLater {
-                        Client.control.displayStatus("joined")
+                        Client.control.displayStatus("Connected")
                     }
                     members.clear()
                     members ++= x

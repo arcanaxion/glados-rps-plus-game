@@ -2,7 +2,7 @@ package com.glados.view
 import akka.actor.typed.ActorRef
 import scalafxml.core.macros.sfxml
 import scalafx.event.ActionEvent
-import scalafx.scene.control.{Alert, ButtonType, DialogPane, Label, ListView, TextField}
+import scalafx.scene.control.{Alert, ButtonType, DialogPane, Label, ListView, TextField, Button}
 import scalafx.scene.control.Alert.AlertType
 import com.glados.RPSClient
 import com.glados.RPSClient.getClass
@@ -15,10 +15,9 @@ import scalafx.collections.ObservableBuffer
 import scalafx.Includes._
 
 @sfxml
-class MainWindowController(private val txtName: TextField,
-private val lblStatus: Label, private val choiceDisplay: Label, private val listUser: ListView[User],
-
-private val txtMessage: TextField) {
+class MainWindowController(private val txtName: TextField, private val lblStatus: Label, 
+private val choiceDisplay: Label, private val listUser: ListView[User], 
+private val txtMessage: TextField, private val join: Button) {
     var RPSClientRef: Option[ActorRef[RPSClient.Command]] = None
 
     def handleJoin(action: ActionEvent): Unit = {
@@ -30,6 +29,13 @@ private val txtMessage: TextField) {
 
     def displayStatus(text: String): Unit = {
         lblStatus.text = text
+        
+        // makes the name TextField uneditable but remain clearly visible
+        txtName.editable = false
+        txtName.mouseTransparent = true
+
+        // makes the Join button uneditable
+        join.disable = true
     }
 
     def displayChoice(text: String): Unit = {
@@ -42,9 +48,9 @@ private val txtMessage: TextField) {
 
     def rejectAlert(): Unit = {
         new Alert(AlertType.Information) {
-        title = "User: " + txtName.getText()
-        headerText = "Rejected!"
-        contentText = "The user you have selected is currently ingame or has rejected your challenge"
+            title = "User: " + txtName.getText()
+            headerText = "Rejected!"
+            contentText = "The user you have selected is currently in-game or has rejected your challenge."
         }.showAndWait()
         RPSClient.challengeStatus = "None"
     }
@@ -55,14 +61,14 @@ private val txtMessage: TextField) {
         val alert = new Alert(AlertType.Confirmation) {
             title = "User: " + txtName.getText()
             headerText = "You have received a challenge from User."
-            contentText = "Do you wish to accept this challange?"
+            contentText = "Do you wish to accept this challenge?"
         }
 
         val result = alert.showAndWait()
         // React to user's selectioon
         result match {
             case Some(ButtonType.OK) => RPSClient.challengeDecision = "yes"
-            case _                    => RPSClient.challengeDecision = "no"
+            case _ => RPSClient.challengeDecision = "no"
         }
     }
 
@@ -80,7 +86,7 @@ private val txtMessage: TextField) {
         val alert = new Alert(AlertType.Confirmation) {
             title = "User: " + txtName.getText()
             headerText = "You have accepted the challenge."
-            contentText = "Choose your option."
+            contentText = "Choose your option: "
             buttonTypes = Seq(ButtonTypeRock, ButtonTypePaper, ButtonTypeScissors, ButtonType.Cancel)
         }
 
@@ -115,7 +121,7 @@ private val txtMessage: TextField) {
         val alert = new Alert(AlertType.Confirmation) {
             title = "User: " + txtName.getText()
             headerText = "Your opponent has chosen."
-            contentText = "Choose your option."
+            contentText = "Choose your option: "
             buttonTypes = Seq(ButtonTypeRock, ButtonTypePaper, ButtonTypeScissors, ButtonType.Cancel)
         }
 
@@ -138,6 +144,7 @@ private val txtMessage: TextField) {
                 Client.userRef ! RPSClient.SendReject(listUser.selectionModel().selectedItem.value.ref)
         }
 
+        // game result evaluation is done by the challenger (not the challenged)
         if (selfChoice == "rock") {
             opponentChoice match {
                 case "rock" => gameResult = "draw"
@@ -168,6 +175,7 @@ private val txtMessage: TextField) {
             case "draw" => opponentResult = "draw"
         }
 
+        // the challenger sends the game results to the challenged
         Client.userRef ! RPSClient.SendResult(listUser.selectionModel().selectedItem.value.ref, opponentChoice, selfChoice, opponentResult)
         displayResult(selfChoice, opponentChoice, gameResult)
 
@@ -176,10 +184,10 @@ private val txtMessage: TextField) {
     def displayResult(selfChoice: String, opponentChoice: String, gameResult: String): Unit ={
         new Alert(AlertType.Information) {
             title = "User: " + txtName.getText()
-            headerText = "You chose " + selfChoice + " while your opponent chose " + opponentChoice
-            contentText = "You " + gameResult
+            headerText = s"You chose ${selfChoice.toUpperCase} while your opponent chose ${opponentChoice.toUpperCase}."
+            contentText = s"You ${gameResult.toUpperCase}!"
         }.showAndWait()
-        
+
         RPSClient.challengeStatus = "None"
         displayChoice("None")
     }
