@@ -42,7 +42,7 @@ private val txtMessage: TextField, private val join: Button) {
     }
 
     def displayChoice(text: String): Unit = {
-        choiceDisplay.text = text
+        choiceDisplay.text = text.toUpperCase
     }
 
     def updateList(x: Iterable[User]): Unit ={

@@ -20,8 +20,6 @@ import akka.actor.Address
 object RPSClient {
 
     sealed trait Command extends JsonSerializable
-    var challengeStatus = new String("None")  // Status on whether user is being challenged
-    var challengeDecision = new String("None") // Status on whether user accepts or rejects challenge
 
     //internal protocol
     case object start extends Command
@@ -61,6 +59,10 @@ object RPSClient {
     var remoteOpt: Option[ActorRef[RPSServer.Command]] = None 
     var nameOpt: Option[String] = None
 
+    // user challenge states
+    var challengeStatus = "None"  // Status on whether user is being challenged
+    var challengeDecision = "None" // Status on whether user accepts or rejects challenge
+
     def messageStarted(): Behavior[RPSClient.Command] = Behaviors.receive[RPSClient.Command] { (context, message) => 
         message match {
             case SendChallenge(target) =>
@@ -83,7 +85,7 @@ object RPSClient {
 
                     // handle challenge decision
                     if (challengeDecision == "yes") { // user accepts challenge
-                        var selection = new String("None")
+                        var selection = "None"
                         Platform.runLater {
                             selection = Client.control.startGameAlert()
                         }
